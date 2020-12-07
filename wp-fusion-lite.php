@@ -406,6 +406,7 @@ final class WP_Fusion_Lite {
 				'loopify'        => 'WPF_Loopify',
 				'wp-erp'         => 'WPF_WP_ERP',
 				'engagebay'      => 'WPF_Engagebay',
+				'growmatik'      => 'WPF_Growmatik',
 			)
 		);
 
