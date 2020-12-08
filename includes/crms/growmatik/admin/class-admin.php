@@ -20,8 +20,8 @@ class WPF_Growmatik_Admin {
 		$this->crm  = $crm;
 
 		add_filter( 'wpf_configure_settings', array( $this, 'register_connection_settings' ), 15, 2 );
-        add_action( 'show_field_growmatik_header_begin', array( $this, 'show_field_growmatik_header_begin' ), 10, 2 );
-        add_action( 'show_field_growmatik_key_end', array( $this, 'show_field_growmatik_key_end' ), 10, 2 );
+		add_action( 'show_field_growmatik_header_begin', array( $this, 'show_field_growmatik_header_begin' ), 10, 2 );
+		add_action( 'show_field_growmatik_key_end', array( $this, 'show_field_growmatik_key_end' ), 10, 2 );
 
 		// AJAX
 		add_action( 'wp_ajax_wpf_test_connection_' . $this->slug, array( $this, 'test_connection' ) );
@@ -62,16 +62,16 @@ class WPF_Growmatik_Admin {
 			'std'     => 0,
 			'type'    => 'heading',
 			'section' => 'setup'
-        );
+		);
 
-        $new_settings['growmatik_site_id'] = array(
+		$new_settings['growmatik_site_id'] = array(
 			'title'       => __( 'Site ID', 'wp-fusion-lite' ),
-            'desc'        => __( 'Enter your Site ID. You can get it from the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
-            'std'         => '',
+			'desc'        => __( 'Enter your Site ID. You can get it from the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
+			'std'         => '',
 			'type'        => 'text',
 			'section'     => 'setup'
 		);
-        
+		
 		$new_settings['growmatik_api_key'] = array(
 			'title'       => __( 'API Key', 'wp-fusion-lite' ),
 			'desc'        => __( 'Enter your Growmatik API key. You can generate one in the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
@@ -79,7 +79,7 @@ class WPF_Growmatik_Admin {
 			'section'     => 'setup',
 			'class'       => 'api_key',
 			'post_fields' => array( 'growmatik_site_id', 'growmatik_api_key' )
-        );
+		);
 
 		$settings = wp_fusion()->settings->insert_setting_after( 'crm', $settings, $new_settings );
 
@@ -101,7 +101,7 @@ class WPF_Growmatik_Admin {
 		$crm = wp_fusion()->settings->get( 'crm' );
 		echo '<div id="' . $this->slug . '" class="crm-config ' . ( $crm == false || $crm != $this->slug ? 'hidden' : 'crm-active' ) . '" data-name="' . $this->name . '" data-crm="' . $this->slug . '">';
 
-    }
+	}
 
 	/**
 	 * Close out Growmatik section
@@ -146,7 +146,7 @@ class WPF_Growmatik_Admin {
 		} else {
 
 			$options 						  = wp_fusion()->settings->get_all();
-			$options['growmatik_key'] 		  = $api_key;
+			$options['growmatik_api_key'] 	  = $api_key;
 			$options['crm'] 				  = $this->slug;
 			$options['connection_configured'] = true;
 
