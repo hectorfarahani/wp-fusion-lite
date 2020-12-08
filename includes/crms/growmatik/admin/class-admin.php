@@ -71,6 +71,14 @@ class WPF_Growmatik_Admin {
 			'type'        => 'text',
 			'section'     => 'setup'
 		);
+
+		$new_settings['growmatik_api_secret'] = array(
+			'title'       => __( 'API Secret', 'wp-fusion-lite' ),
+			'desc'        => __( 'Enter your Growmatik API Secret. You can generate one in the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
+			'std'         => '',
+			'type'        => 'text',
+			'section'     => 'setup',
+		);
 		
 		$new_settings['growmatik_api_key'] = array(
 			'title'       => __( 'API Key', 'wp-fusion-lite' ),
