@@ -42,7 +42,6 @@ class WPF_Growmatik_Admin {
 	public function init() {
 
 		// Hooks in init() will run on the admin screen when this CRM is active
-
 	}
 
 
@@ -61,32 +60,24 @@ class WPF_Growmatik_Admin {
 			'title'   => __( 'Growmatik CRM Configuration', 'wp-fusion' ),
 			'std'     => 0,
 			'type'    => 'heading',
-			'section' => 'setup'
-		);
-
-		$new_settings['growmatik_site_id'] = array(
-			'title'       => __( 'Site ID', 'wp-fusion-lite' ),
-			'desc'        => __( 'Enter your Site ID. You can get it from the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
-			'std'         => '',
-			'type'        => 'text',
-			'section'     => 'setup'
+			'section' => 'setup',
 		);
 
 		$new_settings['growmatik_api_secret'] = array(
-			'title'       => __( 'API Secret', 'wp-fusion-lite' ),
-			'desc'        => __( 'Enter your Growmatik API Secret. You can generate one in the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
-			'std'         => '',
-			'type'        => 'text',
-			'section'     => 'setup',
+			'title'   => __( 'API Secret', 'wp-fusion-lite' ),
+			'desc'    => __( 'Enter your Growmatik API Secret. You can generate one in the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
+			'std'     => '',
+			'type'    => 'text',
+			'section' => 'setup',
 		);
-		
+
 		$new_settings['growmatik_api_key'] = array(
 			'title'       => __( 'API Key', 'wp-fusion-lite' ),
 			'desc'        => __( 'Enter your Growmatik API key. You can generate one in the <em>Site settings > Integrations > API</em>.', 'wp-fusion-lite' ),
 			'type'        => 'api_validate',
 			'section'     => 'setup',
 			'class'       => 'api_key',
-			'post_fields' => array( 'growmatik_site_id', 'growmatik_api_key' )
+			'post_fields' => array( 'growmatik_api_secret', 'growmatik_api_key' ),
 		);
 
 		$settings = wp_fusion()->settings->insert_setting_after( 'crm', $settings, $new_settings );
@@ -143,9 +134,10 @@ class WPF_Growmatik_Admin {
 
 	public function test_connection() {
 
-		$api_key = sanitize_text_field( $_POST['growmatik_key'] );
+		$api_secret = sanitize_text_field( $_POST['growmatik_api_secret'] );
+		$api_key    = sanitize_text_field( $_POST['growmatik_api_key'] );
 
-		$connection = $this->crm->connect( $api_key, true );
+		$connection = $this->crm->connect( $api_secret, $api_key );
 
 		if ( is_wp_error( $connection ) ) {
 
@@ -153,9 +145,10 @@ class WPF_Growmatik_Admin {
 
 		} else {
 
-			$options 						  = wp_fusion()->settings->get_all();
-			$options['growmatik_api_key'] 	  = $api_key;
-			$options['crm'] 				  = $this->slug;
+			$options                          = wp_fusion()->settings->get_all();
+			$options['growmatik_api_secret']  = $api_secret;
+			$options['growmatik_api_key']     = $api_key;
+			$options['crm']                   = $this->slug;
 			$options['connection_configured'] = true;
 
 			wp_fusion()->settings->set_all( $options );

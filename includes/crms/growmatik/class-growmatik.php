@@ -15,12 +15,6 @@ class WPF_Growmatik {
 	public $url;
 
 	/**
-	 * Contains Site ID
-	 */
-
-	public $site_id;
-
-	/**
 	 * Lets pluggable functions know which features are supported by the CRM
 	 */
 
@@ -37,8 +31,8 @@ class WPF_Growmatik {
 
 		$this->slug     = 'growmatik';
 		$this->name     = 'Growmatik';
-		$this->supports = array('add_tags', 'add_fields');
-		$this->url      = '';
+		$this->supports = array( 'add_tags', 'add_fields' );
+		$this->url      = 'https://api.stg.growmatik.ai/public/v1/'; // @todo Should be updated.
 
 		// Set up admin options
 		if ( is_admin() ) {
@@ -58,7 +52,6 @@ class WPF_Growmatik {
 	public function init() {
 
 		// add_filter( 'wpf_format_field_value', array( $this, 'format_field_value' ), 10, 3 );
-
 	}
 
 
@@ -69,20 +62,19 @@ class WPF_Growmatik {
 	 * @return  array Params
 	 */
 
-	public function get_params( $site_id = null, $api_key = null ) {
+	public function get_params( $api_secret = null, $api_key = null ) {
 
 		// Get saved data from DB
-		if ( empty( $site_id ) || empty( $api_key ) ) {
-			$site_id = wp_fusion()->settings->get( 'growmatik_site_id' );
+		if ( empty( $api_secret ) || empty( $api_key ) ) {
+			$api_key = wp_fusion()->settings->get( 'growmatik_api_secret' );
 			$api_key = wp_fusion()->settings->get( 'growmatik_api_key' );
 		}
 
-		$this->site_id = $site_id;
-
 		$this->params = array(
-			'headers'     => array(
-				"Api-Key"   => $api_key
-			)
+			'headers' => array(
+				'apiSecret' => $api_secret,
+				'apiKey'    => $api_key,
+			),
 		);
 
 		return $this->params;
@@ -96,26 +88,39 @@ class WPF_Growmatik {
 	 * @return  bool
 	 */
 
-	public function connect( $api_url = null, $api_key = null, $test = false ) {
-
-		if ( $test == false ) {
-			return true;
-		}
+	public function connect( $api_secret = null, $api_key = null ) {
 
 		if ( ! $this->params ) {
-			$this->get_params( $api_url, $api_key );
+			$this->get_params( $api_secret, $api_key );
 		}
 
-		$request  = $this->url . '/endpoint/';
+		$test_endpoint = ''; // @todo Ask team for connecten validation endpoint.
+
+		$request  = $this->url . '/' . $test_endpoint . '/';
 		$response = wp_remote_get( $request, $this->params );
 
-		// Validate the connection
+		$response_code = wp_remote_retrieve_response_code( $response );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		return true;
+		if ( 500 == $response_code ) {
+			return new WP_Error( $response_code, __( 'An error has occurred in API server. [error 500]', 'wp-fusion-lite' ) );
+		}
+
+		if ( 401 == $response_code ) {
+			return new WP_Error( $response_code, __( 'API key is not valid. [error 401]', 'wp-fusion-lite' ) );
+		}
+
+		$results = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( isset( $results->success ) && $results->success ) {
+			return true;
+		}
+
+		return new WP_Error( $response_code, __( 'Unknown Error', 'wp-fusion-lite' ) );
+
 	}
 
 
@@ -155,11 +160,10 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-
 		$request  = $this->url . '/endpoint/';
 		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -186,10 +190,10 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request    = $this->url . '/endpoint/';
-		$response   = wp_remote_get( $request, $this->params );
+		$request  = $this->url . '/endpoint/';
+		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -217,10 +221,10 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request      = $this->url . '/endpoint/';
-		$response     = wp_remote_get( $request, $this->params );
+		$request  = $this->url . '/endpoint/';
+		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -243,10 +247,10 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request      = $this->url . '/endpoint/';
-		$response     = wp_remote_get( $request, $this->params );
+		$request  = $this->url . '/endpoint/';
+		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -268,13 +272,13 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request 		= $this->url . '/endpoint/';
-		$params 		= $this->params;
+		$request        = $this->url . '/endpoint/';
+		$params         = $this->params;
 		$params['body'] = $tags;
 
 		$response = wp_remote_post( $request, $params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -294,13 +298,13 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request 		= $this->url . '/endpoint/';
-		$params 		= $this->params;
+		$request        = $this->url . '/endpoint/';
+		$params         = $this->params;
 		$params['body'] = $tags;
 
 		$response = wp_remote_post( $request, $params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -326,13 +330,13 @@ class WPF_Growmatik {
 			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 		}
 
-		$request 		= $this->url . '/endpoint/';
-		$params 		= $this->params;
+		$request        = $this->url . '/endpoint/';
+		$params         = $this->params;
 		$params['body'] = $contact_data;
 
 		$response = wp_remote_post( $request, $params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -361,13 +365,13 @@ class WPF_Growmatik {
 			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 		}
 
-		$request 		= $this->url . '/endpoint/';
-		$params 		= $this->params;
+		$request        = $this->url . '/endpoint/';
+		$params         = $this->params;
 		$params['body'] = $contact_data;
 
 		$response = wp_remote_post( $request, $params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -387,10 +391,10 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request = $this->url . '/endpoint/';
+		$request  = $this->url . '/endpoint/';
 		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -403,7 +407,6 @@ class WPF_Growmatik {
 			if ( $field_data['active'] == true && isset( $body_json['data'][ $field_data['crm_field'] ] ) ) {
 				$user_meta[ $field_id ] = $body_json['data'][ $field_data['crm_field'] ];
 			}
-
 		}
 
 		return $user_meta;
@@ -423,17 +426,16 @@ class WPF_Growmatik {
 			$this->get_params();
 		}
 
-		$request = $this->url . '/endpoint/';
+		$request  = $this->url . '/endpoint/';
 		$response = wp_remote_get( $request, $this->params );
 
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
 		$contact_ids = array();
 
 		// Iterate over the contacts returned in the response and build an array such that $contact_ids = array(1,3,5,67,890);
-
 
 		return $contact_ids;
 
