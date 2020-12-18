@@ -40,8 +40,7 @@ class WPF_Growmatik_Admin {
 	 */
 
 	public function init() {
-
-		// Hooks in init() will run on the admin screen when this CRM is active
+		add_filter( 'wpf_initialize_options', array( $this, 'add_default_fields' ), 10 );
 	}
 
 
@@ -88,6 +87,34 @@ class WPF_Growmatik_Admin {
 
 
 	/**
+	 * Loads standard mailerlite field names and attempts to match them up with standard local ones
+	 *
+	 * @access  public
+	 * @since   1.0
+	 */
+
+	public function add_default_fields( $options ) {
+
+		if ( $options['connection_configured'] == true ) {
+
+			require_once dirname( __FILE__ ) . '/growmatik-fields.php';
+
+			foreach ( $options['contact_fields'] as $field => $data ) {
+
+				if ( isset( $growmatik_fields[ $field ] ) && empty( $options['contact_fields'][ $field ]['crm_field'] ) ) {
+					$options['contact_fields'][ $field ] = array_merge( $options['contact_fields'][ $field ], $growmatik_fields[ $field ] );
+				}
+
+			}
+
+		}
+
+		return $options;
+
+	}
+
+
+	/**
 	 * Puts a div around the CRM configuration section so it can be toggled
 	 *
 	 * @access  public
@@ -108,7 +135,6 @@ class WPF_Growmatik_Admin {
 	 * @access  public
 	 * @since   1.0
 	 */
-
 
 	public function show_field_growmatik_key_end( $id, $field ) {
 
