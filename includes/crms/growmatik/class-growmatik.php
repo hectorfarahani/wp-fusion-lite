@@ -32,7 +32,7 @@ class WPF_Growmatik {
 		$this->slug     = 'growmatik';
 		$this->name     = 'Growmatik';
 		$this->supports = array( 'add_tags', 'add_fields' );
-		$this->url      = 'https://api.stg.growmatik.ai/public/v1/'; // @todo Should be updated.
+		$this->url      = 'https://api.stg.growmatik.ai/public/v1';
 
 		// Set up admin options
 		if ( is_admin() ) {
@@ -62,65 +62,70 @@ class WPF_Growmatik {
 	 * @return  array Params
 	 */
 
-	public function get_params( $api_secret = null, $api_key = null ) {
+	public function get_params( $api_secret = null, $api_key = null, $get = true ) {
 
 		// Get saved data from DB
 		if ( empty( $api_secret ) || empty( $api_key ) ) {
-			$api_key = wp_fusion()->settings->get( 'growmatik_api_secret' );
-			$api_key = wp_fusion()->settings->get( 'growmatik_api_key' );
+			$api_secret = wp_fusion()->settings->get( 'growmatik_api_secret' );
+			$api_key    = wp_fusion()->settings->get( 'growmatik_api_key' );
 		}
 
 		$this->params = array(
 			'headers' => array(
-				'apiSecret' => $api_secret,
-				'apiKey'    => $api_key,
+				'apiKey' => $api_key,
 			),
 		);
+
+		if ( ! $get ) {
+			$this->params['body'] = array(
+				'apiSecret' => $api_secret,
+			);
+		}
 
 		return $this->params;
 	}
 
 
 	/**
-	 * Initialize connection
+	 * Try dummy post request to make sure API credentials are valid.
 	 *
 	 * @access  public
-	 * @return  bool
+	 * @return  bool|object true or WP_Error object with custom error message if connection fails.
 	 */
-
 	public function connect( $api_secret = null, $api_key = null ) {
 
-		if ( ! $this->params ) {
-			$this->get_params( $api_secret, $api_key );
+		if ( !$this->params ) {
+			$this->get_params( $api_secret, $api_key, false );
 		}
 
-		$test_endpoint = ''; // @todo Ask team for connecten validation endpoint.
+		$request  = $this->url . '/contacts';
 
-		$request  = $this->url . '/' . $test_endpoint . '/';
-		$response = wp_remote_get( $request, $this->params );
+		$this->params['body']['users'] = array();
+
+		$response = wp_remote_post(
+			$request,
+			$this->params
+		);
 
 		$response_code = wp_remote_retrieve_response_code( $response );
+
+		if ( 200 === $response_code ) {
+			return true;
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
 		if ( 500 == $response_code ) {
-			return new WP_Error( $response_code, __( 'An error has occurred in API server. [error 500]', 'wp-fusion-lite' ) );
+			return new WP_Error( $response_code, __('An error has occurred in API server. [error 500]', 'wp-fusion-lite') );
 		}
 
 		if ( 401 == $response_code ) {
-			return new WP_Error( $response_code, __( 'API key is not valid. [error 401]', 'wp-fusion-lite' ) );
+			return new WP_Error( $response_code, __('Invalid API credentials. [error 401]', 'wp-fusion-lite') );
 		}
 
-		$results = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( isset( $results->success ) && $results->success ) {
-			return true;
-		}
-
-		return new WP_Error( $response_code, __( 'Unknown Error', 'wp-fusion-lite' ) );
-
+		return new WP_Error( $response_code, __('Unknown Error', 'wp-fusion-lite') );
 	}
 
 

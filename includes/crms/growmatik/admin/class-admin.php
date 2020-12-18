@@ -150,14 +150,12 @@ class WPF_Growmatik_Admin {
 
 	}
 
-
 	/**
 	 * Verify connection credentials
 	 *
 	 * @access public
 	 * @return bool
 	 */
-
 	public function test_connection() {
 
 		$api_secret = sanitize_text_field( $_POST['growmatik_api_secret'] );
@@ -166,26 +164,17 @@ class WPF_Growmatik_Admin {
 		$connection = $this->crm->connect( $api_secret, $api_key );
 
 		if ( is_wp_error( $connection ) ) {
-
 			wp_send_json_error( $connection->get_error_message() );
-
-		} else {
-
-			$options                          = wp_fusion()->settings->get_all();
-			$options['growmatik_api_secret']  = $api_secret;
-			$options['growmatik_api_key']     = $api_key;
-			$options['crm']                   = $this->slug;
-			$options['connection_configured'] = true;
-
-			wp_fusion()->settings->set_all( $options );
-
-			wp_send_json_success();
-
 		}
 
-		die();
+		$options                          = wp_fusion()->settings->get_all();
+		$options['growmatik_api_secret']  = $api_secret;
+		$options['growmatik_api_key']     = $api_key;
+		$options['crm']                   = $this->slug;
+		$options['connection_configured'] = true;
 
+		wp_fusion()->settings->set_all( $options );
+
+		wp_send_json_success();
 	}
-
-
 }
