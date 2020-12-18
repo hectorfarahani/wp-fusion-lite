@@ -254,23 +254,30 @@ class WPF_Growmatik {
 	 * @access public
 	 * @return void
 	 */
-
 	public function get_tags( $contact_id ) {
 
 		if ( ! $this->params ) {
-			$this->get_params();
+			$this->get_params( null, null, false );
 		}
 
-		$request  = $this->url . '/endpoint/';
+		$this->params['body']['id'] = $contact_id;
+		
+		$request  = $this->url . '/contact/tags/id/';
 		$response = wp_remote_get( $request, $this->params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		// Parse response to create an array of tag ids. $tags = array(123, 678, 543);
+		$tags = json_decode( wp_remote_retrieve_body( $response ) );
 
-		return $tags;
+		$user_tags = array();
+
+		foreach ( $tags->data as $tag ) {
+			$user_tags[ strval($tag->id) ] = $tag->name;
+		}
+
+		return $user_tags;
 	}
 
 	/**
