@@ -3,8 +3,8 @@
 $growmatik_fields = array();
 
 $growmatik_fields['user_login'] = array(
-    'crm_label' => 'Username',
-    'crm_field' => 'userName',
+	'crm_label' => 'Username',
+	'crm_field' => 'userName',
 );
 
 $growmatik_fields['user_email'] = array(
@@ -24,7 +24,7 @@ $growmatik_fields['last_name'] = array(
 
 $growmatik_fields['billing_address_1'] = array(
 	'crm_label' => 'Address',
-	'crm_field' => 'address'
+	'crm_field' => 'address',
 );
 
 $growmatik_fields['phone_number'] = array(
@@ -39,7 +39,7 @@ $growmatik_fields['billing_country'] = array(
 
 $growmatik_fields['billing_state'] = array(
 	'crm_label' => 'State',
-	'crm_field' => 'regoin'
+	'crm_field' => 'regoin',
 );
 
 $growmatik_fields['billing_city'] = array(

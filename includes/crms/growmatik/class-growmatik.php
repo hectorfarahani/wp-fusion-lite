@@ -90,7 +90,7 @@ class WPF_Growmatik {
 
 		$params = $this->get_params( false, $api_secret, $api_key );
 
-		$request  = $this->url . '/contacts';
+		$request = $this->url . '/contacts';
 
 		$params['body']['users'] = array();
 
@@ -107,14 +107,14 @@ class WPF_Growmatik {
 		}
 
 		if ( 500 == $response_code ) {
-			return new WP_Error( $response_code, __('An error has occurred in API server. [error 500]', 'wp-fusion-lite') );
+			return new WP_Error( $response_code, __( 'An error has occurred in API server. [error 500]', 'wp-fusion-lite' ) );
 		}
 
 		if ( 401 == $response_code ) {
-			return new WP_Error( $response_code, __('Invalid API credentials. [error 401]', 'wp-fusion-lite') );
+			return new WP_Error( $response_code, __( 'Invalid API credentials. [error 401]', 'wp-fusion-lite' ) );
 		}
 
-		return new WP_Error( $response_code, __('Unknown Error', 'wp-fusion-lite') );
+		return new WP_Error( $response_code, __( 'Unknown Error', 'wp-fusion-lite' ) );
 	}
 
 
@@ -164,7 +164,7 @@ class WPF_Growmatik {
 		$available_tags = array();
 
 		foreach ( $tags->data as $tag ) {
-			$available_tags[ strval($tag->id) ] = $tag->name;
+			$available_tags[ strval( $tag->id ) ] = $tag->name;
 		}
 
 		wp_fusion()->settings->set( 'available_tags', $available_tags );
@@ -194,7 +194,7 @@ class WPF_Growmatik {
 		$fields = json_decode( wp_remote_retrieve_body( $response ) );
 
 		$crm_fields = array();
-		
+
 		foreach ( $fields->data as $field ) {
 			$crm_fields[ $field->id ] = $field->name;
 		}
@@ -244,7 +244,7 @@ class WPF_Growmatik {
 		$params = $this->get_params( false );
 
 		$params['body']['id'] = $contact_id;
-		
+
 		$request  = $this->url . '/contact/tags/id/';
 		$response = wp_remote_get( $request, $params );
 
@@ -257,7 +257,7 @@ class WPF_Growmatik {
 		$user_tags = array();
 
 		foreach ( $tags->data as $tag ) {
-			$user_tags[ strval($tag->id) ] = $tag->name;
+			$user_tags[ strval( $tag->id ) ] = $tag->name;
 		}
 
 		return $user_tags;

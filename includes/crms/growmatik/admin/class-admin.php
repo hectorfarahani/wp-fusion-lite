@@ -104,9 +104,7 @@ class WPF_Growmatik_Admin {
 				if ( isset( $growmatik_fields[ $field ] ) && empty( $options['contact_fields'][ $field ]['crm_field'] ) ) {
 					$options['contact_fields'][ $field ] = array_merge( $options['contact_fields'][ $field ], $growmatik_fields[ $field ] );
 				}
-
 			}
-
 		}
 
 		return $options;
