@@ -196,21 +196,26 @@ class WPF_Growmatik {
 	public function sync_crm_fields() {
 
 		if ( ! $this->params ) {
-			$this->get_params();
+			$this->get_params( null, null, true );
 		}
 
-		$request  = $this->url . '/endpoint/';
+		$request  = $this->url . '/site/attributes/';
 		$response = wp_remote_get( $request, $this->params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		$crm_fields = array();
+		$fields = json_decode( wp_remote_retrieve_body( $response ) );
 
-		// Load available fields into $crm_fields like 'field_key' => 'Field Label'
+		$crm_fields = array();
+		
+		foreach ( $fields->data as $field ) {
+			$crm_fields[ $field->id ] = $field->name;
+		}
 
 		asort( $crm_fields );
+
 		wp_fusion()->settings->set( 'crm_fields', $crm_fields );
 
 		return $crm_fields;
