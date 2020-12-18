@@ -3,12 +3,6 @@
 class WPF_Growmatik {
 
 	/**
-	 * Contains API params
-	 */
-
-	public $params;
-
-	/**
 	 * Contains API url
 	 */
 
@@ -62,7 +56,7 @@ class WPF_Growmatik {
 	 * @return  array Params
 	 */
 
-	public function get_params( $api_secret = null, $api_key = null, $get = true ) {
+	public function get_params( $get = true, $api_secret = null, $api_key = null ) {
 
 		// Get saved data from DB
 		if ( empty( $api_secret ) || empty( $api_key ) ) {
@@ -70,19 +64,19 @@ class WPF_Growmatik {
 			$api_key    = wp_fusion()->settings->get( 'growmatik_api_key' );
 		}
 
-		$this->params = array(
+		$params = array(
 			'headers' => array(
 				'apiKey' => $api_key,
 			),
 		);
 
 		if ( ! $get ) {
-			$this->params['body'] = array(
+			$params['body'] = array(
 				'apiSecret' => $api_secret,
 			);
 		}
 
-		return $this->params;
+		return $params;
 	}
 
 
@@ -94,18 +88,13 @@ class WPF_Growmatik {
 	 */
 	public function connect( $api_secret = null, $api_key = null ) {
 
-		if ( !$this->params ) {
-			$this->get_params( $api_secret, $api_key, false );
-		}
+		$params = $this->get_params( false, $api_secret, $api_key );
 
 		$request  = $this->url . '/contacts';
 
-		$this->params['body']['users'] = array();
+		$params['body']['users'] = array();
 
-		$response = wp_remote_post(
-			$request,
-			$this->params
-		);
+		$response = wp_remote_post( $request, $params );
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 
@@ -161,12 +150,10 @@ class WPF_Growmatik {
 
 	public function sync_tags() {
 
-		if ( ! $this->params ) {
-			$this->get_params( null, null, true );
-		}
+		$params = $this->get_params( false );
 
 		$request  = $this->url . '/site/tags/';
-		$response = wp_remote_get( $request, $this->params );
+		$response = wp_remote_get( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -195,12 +182,10 @@ class WPF_Growmatik {
 
 	public function sync_crm_fields() {
 
-		if ( ! $this->params ) {
-			$this->get_params( null, null, true );
-		}
+		$params = $this->get_params( false );
 
 		$request  = $this->url . '/site/attributes/';
-		$response = wp_remote_get( $request, $this->params );
+		$response = wp_remote_get( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -256,14 +241,12 @@ class WPF_Growmatik {
 	 */
 	public function get_tags( $contact_id ) {
 
-		if ( ! $this->params ) {
-			$this->get_params( null, null, false );
-		}
+		$params = $this->get_params( false );
 
-		$this->params['body']['id'] = $contact_id;
+		$params['body']['id'] = $contact_id;
 		
 		$request  = $this->url . '/contact/tags/id/';
-		$response = wp_remote_get( $request, $this->params );
+		$response = wp_remote_get( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
