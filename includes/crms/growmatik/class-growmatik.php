@@ -216,20 +216,20 @@ class WPF_Growmatik {
 
 	public function get_contact_id( $email_address ) {
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
+		$params = $this->get_params( false );
 
-		$request  = $this->url . '/endpoint/';
-		$response = wp_remote_get( $request, $this->params );
+		$params['body']['email'] = $email_address;
+
+		$request  = $this->url . '/contact/email/';
+		$response = wp_remote_get( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		// Parse response for contact ID here
+		$user = json_decode( wp_remote_retrieve_body( $response ) );
 
-		return $contact_id;
+		return $user->data->userId;
 	}
 
 
