@@ -162,19 +162,23 @@ class WPF_Growmatik {
 	public function sync_tags() {
 
 		if ( ! $this->params ) {
-			$this->get_params();
+			$this->get_params( null, null, true );
 		}
 
-		$request  = $this->url . '/endpoint/';
+		$request  = $this->url . '/site/tags/';
 		$response = wp_remote_get( $request, $this->params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
+		$tags = json_decode( wp_remote_retrieve_body( $response ) );
+
 		$available_tags = array();
 
-		// Load available tags into $available_tags like 'tag_id' => 'Tag Label'
+		foreach ( $tags->data as $tag ) {
+			$available_tags[ strval($tag->id) ] = $tag->name;
+		}
 
 		wp_fusion()->settings->set( 'available_tags', $available_tags );
 
