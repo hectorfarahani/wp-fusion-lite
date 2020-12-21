@@ -417,33 +417,4 @@ class WPF_Growmatik {
 		return $user_meta;
 	}
 
-
-	/**
-	 * Gets a list of contact IDs based on tag
-	 *
-	 * @access public
-	 * @return array Contact IDs returned
-	 */
-
-	public function load_contacts( $tag ) {
-
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
-
-		$request  = $this->url . '/endpoint/';
-		$response = wp_remote_get( $request, $this->params );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$contact_ids = array();
-
-		// Iterate over the contacts returned in the response and build an array such that $contact_ids = array(1,3,5,67,890);
-
-		return $contact_ids;
-
-	}
-
 }
