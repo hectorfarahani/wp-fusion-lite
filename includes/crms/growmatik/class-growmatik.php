@@ -150,7 +150,7 @@ class WPF_Growmatik {
 
 	public function sync_tags() {
 
-		$params = $this->get_params( false );
+		$params = $this->get_params();
 
 		$request  = $this->url . '/site/tags/';
 		$response = wp_remote_get( $request, $params );
@@ -182,7 +182,7 @@ class WPF_Growmatik {
 
 	public function sync_crm_fields() {
 
-		$params = $this->get_params( false );
+		$params = $this->get_params();
 
 		$request  = $this->url . '/site/attributes/';
 		$response = wp_remote_get( $request, $params );
@@ -216,7 +216,7 @@ class WPF_Growmatik {
 
 	public function get_contact_id( $email_address ) {
 
-		$params = $this->get_params( false );
+		$params = $this->get_params();
 
 		$params['body']['email'] = $email_address;
 
@@ -241,7 +241,7 @@ class WPF_Growmatik {
 	 */
 	public function get_tags( $contact_id ) {
 
-		$params = $this->get_params( false );
+		$params = $this->get_params();
 
 		$params['body']['id'] = $contact_id;
 
