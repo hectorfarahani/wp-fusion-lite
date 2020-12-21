@@ -225,7 +225,7 @@ class WPF_Growmatik {
 
 		$user = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( isset( $user->data ) && isset( $yser->data->userId ) ) {
+		if ( isset( $user->data ) && isset( $user->data->userId ) ) {
 			return $user->data->userId;
 		}
 
