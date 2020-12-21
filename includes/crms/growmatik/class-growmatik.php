@@ -391,12 +391,12 @@ class WPF_Growmatik {
 
 	public function load_contact( $contact_id ) {
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
+		$params   = $this->get_params();
+		$request  = $this->url . '/contact/id/';
 
-		$request  = $this->url . '/endpoint/';
-		$response = wp_remote_get( $request, $this->params );
+		$params['body']['id'] = $contact_id;
+
+		$response = wp_remote_get( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -407,8 +407,7 @@ class WPF_Growmatik {
 		$body_json      = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		foreach ( $contact_fields as $field_id => $field_data ) {
-
-			if ( $field_data['active'] == true && isset( $body_json['data'][ $field_data['crm_field'] ] ) ) {
+			if ( true == $field_data['active'] && isset( $body_json['data'][ $field_data['crm_field'] ] ) ) {
 				$user_meta[ $field_id ] = $body_json['data'][ $field_data['crm_field'] ];
 			}
 		}
