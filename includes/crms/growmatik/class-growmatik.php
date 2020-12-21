@@ -36,6 +36,7 @@ class WPF_Growmatik {
 
 	}
 
+
 	/**
 	 * Sets up hooks specific to this CRM
 	 *
@@ -43,14 +44,13 @@ class WPF_Growmatik {
 	 * @return void
 	 */
 
-	public function init() {
-
-		// add_filter( 'wpf_format_field_value', array( $this, 'format_field_value' ), 10, 3 );
-	}
+	public function init() {}
 
 
 	/**
 	 * Gets params for API calls
+	 *
+	 * Adds apiSecret for non-GET requests
 	 *
 	 * @access  public
 	 * @return  array Params
@@ -86,16 +86,16 @@ class WPF_Growmatik {
 	 * @access  public
 	 * @return  bool|object true or WP_Error object with custom error message if connection fails.
 	 */
+
 	public function connect( $api_secret = null, $api_key = null ) {
 
-		$params = $this->get_params( false, $api_secret, $api_key );
-
+		$params  = $this->get_params( false, $api_secret, $api_key );
 		$request = $this->url . '/contacts';
 
 		$params['body']['users'] = array();
 
-		$response = wp_remote_post( $request, $params );
-
+		// Post request.
+		$response      = wp_remote_post( $request, $params );
 		$response_code = wp_remote_retrieve_response_code( $response );
 
 		if ( 200 === $response_code ) {
@@ -137,7 +137,6 @@ class WPF_Growmatik {
 		do_action( 'wpf_sync' );
 
 		return true;
-
 	}
 
 
@@ -150,8 +149,7 @@ class WPF_Growmatik {
 
 	public function sync_tags() {
 
-		$params = $this->get_params();
-
+		$params   = $this->get_params();
 		$request  = $this->url . '/site/tags/';
 		$response = wp_remote_get( $request, $params );
 
@@ -159,9 +157,8 @@ class WPF_Growmatik {
 			return $response;
 		}
 
-		$tags = json_decode( wp_remote_retrieve_body( $response ) );
-
 		$available_tags = array();
+		$tags           = json_decode( wp_remote_retrieve_body( $response ) );
 
 		foreach ( $tags->data as $tag ) {
 			$available_tags[ strval( $tag->id ) ] = $tag->name;
@@ -182,8 +179,7 @@ class WPF_Growmatik {
 
 	public function sync_crm_fields() {
 
-		$params = $this->get_params();
-
+		$params   = $this->get_params();
 		$request  = $this->url . '/site/attributes/';
 		$response = wp_remote_get( $request, $params );
 
@@ -243,6 +239,7 @@ class WPF_Growmatik {
 	 * @access public
 	 * @return void
 	 */
+
 	public function get_tags( $contact_id ) {
 
 		$params = $this->get_params();
@@ -256,9 +253,8 @@ class WPF_Growmatik {
 			return $response;
 		}
 
-		$tags = json_decode( wp_remote_retrieve_body( $response ) );
-
 		$user_tags = array();
+		$tags      = json_decode( wp_remote_retrieve_body( $response ) );
 
 		foreach ( $tags->data as $tag ) {
 			$user_tags[ strval( $tag->id ) ] = $tag->name;
@@ -266,6 +262,7 @@ class WPF_Growmatik {
 
 		return $user_tags;
 	}
+
 
 	/**
 	 * Applies tags to a contact
@@ -292,6 +289,7 @@ class WPF_Growmatik {
 
 		return true;
 	}
+
 
 	/**
 	 * Removes tags from a contact
@@ -339,7 +337,7 @@ class WPF_Growmatik {
 		$request = $this->url . '/contacts/';
 
 		$params['body']['users'][0] = $contact_data;
-		
+
 		$response = wp_remote_post( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
@@ -354,6 +352,7 @@ class WPF_Growmatik {
 
 		return $results->userId;
 	}
+
 
 	/**
 	 * Update contact
@@ -373,7 +372,7 @@ class WPF_Growmatik {
 		$request = $this->url . '/contacts/';
 
 		$params['body']['users'][0] = $contact_data;
-		
+
 		$response = wp_remote_post( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
@@ -382,6 +381,7 @@ class WPF_Growmatik {
 
 		return true;
 	}
+
 
 	/**
 	 * Loads a contact and updates local user meta
@@ -416,5 +416,4 @@ class WPF_Growmatik {
 
 		return $user_meta;
 	}
-
 }
