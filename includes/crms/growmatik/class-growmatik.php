@@ -330,30 +330,29 @@ class WPF_Growmatik {
 
 	public function add_contact( $contact_data, $map_meta_fields = true ) {
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
+		$params = $this->get_params( false );
 
 		if ( $map_meta_fields == true ) {
 			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 		}
 
-		$request        = $this->url . '/endpoint/';
-		$params         = $this->params;
-		$params['body'] = $contact_data;
+		$request = $this->url . '/contacts/';
 
+		$params['body']['users'][0] = $contact_data;
+		
 		$response = wp_remote_post( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ) );
+		$results = json_decode( wp_remote_retrieve_body( $response ) );
 
-		// Get new contact ID out of response
+		if ( ! $results->success ) {
+			return new WP_Error( $results->message );
+		}
 
-		return $contact_id;
-
+		return $results->userId;
 	}
 
 	/**
@@ -365,18 +364,16 @@ class WPF_Growmatik {
 
 	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
+		$params = $this->get_params( false );
 
 		if ( $map_meta_fields == true ) {
 			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 		}
 
-		$request        = $this->url . '/endpoint/';
-		$params         = $this->params;
-		$params['body'] = $contact_data;
+		$request = $this->url . '/contacts/';
 
+		$params['body']['users'][0] = $contact_data;
+		
 		$response = wp_remote_post( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
