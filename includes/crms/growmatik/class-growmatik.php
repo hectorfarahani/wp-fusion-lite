@@ -229,7 +229,11 @@ class WPF_Growmatik {
 
 		$user = json_decode( wp_remote_retrieve_body( $response ) );
 
-		return $user->data->userId;
+		if ( isset( $user->data ) && isset( $yser->data->userId ) ) {
+			return $user->data->userId;
+		}
+
+		return new WP_Error( 404, __( 'User not found. [error 404]', 'wp-fusion-lite' ) );
 	}
 
 
