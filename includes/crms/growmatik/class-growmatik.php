@@ -300,15 +300,14 @@ class WPF_Growmatik {
 
 	public function remove_tags( $tags, $contact_id ) {
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
+		$params  = $this->get_params( false );
+		$request = $this->url . '/contact/tags/id/';
 
-		$request        = $this->url . '/endpoint/';
-		$params         = $this->params;
-		$params['body'] = $tags;
+		$params['method']       = 'DELETE';
+		$params['body']['id']   = $contact_id;
+		$params['body']['tags'] = $tags;
 
-		$response = wp_remote_post( $request, $params );
+		$response = wp_remote_request( $request, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
