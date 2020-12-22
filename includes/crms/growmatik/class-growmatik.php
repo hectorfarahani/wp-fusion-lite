@@ -404,27 +404,39 @@ class WPF_Growmatik {
 	 */
 
 	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
+
 		$params = $this->get_params( false );
 
-		$mapped_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
+		if ( $map_meta_fields == true ) {
+			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
+		}
+
+		if ( isset( $contact_data['001'] ) ) {
+			unset( $contact_data['001'] );
+		}
+
+		$prepared_data = array();
+
+		foreach ( $contact_data as $name => $value ) {
+			$prepared_data[] = array(
+				'name'  => $name,
+				'value' => $value,
+			);
+		}
 
 		$request = $this->url . '/contact/attribute/email/';
 
 		$params['body']['email'] = $this->get_email_from_cid( $contact_id );
-		$params['body']['data']  = $mapped_data;
+		$params['body']['data']  = $prepared_data;
 
 		$response = wp_remote_post( $request, $params );
 
-		// if ( is_wp_error( $response ) ) {
-		// 	return $response;
-		// }
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
 
 		$results = json_decode( wp_remote_retrieve_body( $response ) );
-		ob_start();
-		var_dump( $contact_data );
-		var_dump( $params );
-		var_dump( $results );
-		error_log( ob_get_clean() );
+
 		if ( ! is_wp_error( $results ) ) {
 			return true;
 		}
