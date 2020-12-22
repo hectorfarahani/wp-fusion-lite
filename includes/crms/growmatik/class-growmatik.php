@@ -48,7 +48,7 @@ class WPF_Growmatik {
 
 	/**
 	 * Get user email by contact id.
-	 * 
+	 *
 	 * @param $contact_id Growmatik user id.
 	 * @access private
 	 * @return string User email.
@@ -103,7 +103,7 @@ class WPF_Growmatik {
 
 	/**
 	 * Get all site tags.
-	 * 
+	 *
 	 * @access private
 	 * @return array $available_tags List of available tags as id => lable.
 	 */
@@ -412,7 +412,11 @@ class WPF_Growmatik {
 
 		$request = $this->url . '/contact/';
 
-		$contact_data['email'] = $contact_data['user_email'];
+		if ( ! isset( $contact_data['email'] ) ) {
+			$contact_data['email'] = isset( $contact_data['user_email'] ) ? $contact_data['user_email'] : '';
+		}
+
+		$contact_data['id'] = isset( $contact_data['id'] ) ? $contact_data['id'] : 0;
 
 		$params['body']['user'] = $contact_data;
 
@@ -432,35 +436,39 @@ class WPF_Growmatik {
 	}
 
 
-	/**
-	 * Update contact
-	 *
-	 * @access public
-	 * @return bool
-	 */
+	private function update_contact_basic_attributes( $contact_id, $contact_data, $map_meta_fields ) {
 
-	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
+		$contact_data['id'] = $contact_id;
+		$response           = $this->add_contact( $contact_data );
 
-		$params = $this->get_params( false );
-
-		if ( $map_meta_fields == true ) {
-			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
 
-		if ( isset( $contact_data['001'] ) ) {
-			unset( $contact_data['001'] );
+		$results = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( ! is_wp_error( $results ) ) {
+			return true;
 		}
+
+		return $results;
+
+	}
+
+	private function update_contact_custom_attributes( $contact_id, $contact_data ) {
+		$params  = $this->get_params( false );
+		$request = $this->url . '/contact/attribute/email/';
 
 		$prepared_data = array();
 
 		foreach ( $contact_data as $name => $value ) {
-			$prepared_data[] = array(
-				'name'  => $name,
-				'value' => $value,
-			);
+			if ( ! empty( $value ) ) {
+				$prepared_data[] = array(
+					'name'  => $name,
+					'value' => $value,
+				);
+			}
 		}
-
-		$request = $this->url . '/contact/attribute/email/';
 
 		$params['body']['email'] = $this->get_email_from_cid( $contact_id );
 		$params['body']['data']  = $prepared_data;
@@ -478,6 +486,20 @@ class WPF_Growmatik {
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Update contact
+	 *
+	 * @access public
+	 * @return bool
+	 */
+
+	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
+		$update_basics  = $this->update_contact_basic_attributes( $contact_id, $contact_data, $map_meta_fields );
+		$update_customs = $this->update_contact_custom_attributes( $contact_id, $contact_data );
+
+		return ( $update_basics && $update_customs );
 	}
 
 	/**
