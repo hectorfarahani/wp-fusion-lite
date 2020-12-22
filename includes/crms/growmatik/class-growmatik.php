@@ -139,16 +139,7 @@ class WPF_Growmatik {
 		return true;
 	}
 
-
-	/**
-	 * Gets all available tags and saves them to options
-	 *
-	 * @access public
-	 * @return array Lists
-	 */
-
-	public function sync_tags() {
-
+	public function get_site_tags() {
 		$params   = $this->get_params();
 		$request  = $this->url . '/site/tags/';
 		$response = wp_remote_get( $request, $params );
@@ -163,6 +154,21 @@ class WPF_Growmatik {
 		foreach ( $tags->data as $tag ) {
 			$available_tags[ strval( $tag->id ) ] = $tag->name;
 		}
+
+		return $available_tags;
+	}
+
+
+	/**
+	 * Gets all available tags and saves them to options
+	 *
+	 * @access public
+	 * @return array Lists
+	 */
+
+	public function sync_tags() {
+
+		$available_tags = $this->get_site_tags();
 
 		wp_fusion()->settings->set( 'available_tags', $available_tags );
 
@@ -272,16 +278,15 @@ class WPF_Growmatik {
 	 */
 
 	public function apply_tags( $tags, $contact_id ) {
+		$request = $this->url . '/contact/tags/id';
+		$params  = $this->get_params( false );
 
-		if ( ! $this->params ) {
-			$this->get_params();
-		}
-
-		$request        = $this->url . '/endpoint/';
-		$params         = $this->params;
-		$params['body'] = $tags;
+		$params['body']['tags'] = $tags;
+		$params['body']['id']   = $contact_id;
 
 		$response = wp_remote_post( $request, $params );
+
+		$response_body = json_decode( wp_remote_retrieve_body( $response ) );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -303,9 +308,13 @@ class WPF_Growmatik {
 		$params  = $this->get_params( false );
 		$request = $this->url . '/contact/tags/id/';
 
+		$available_tags = $this->get_site_tags();
+
+		$tags_to_remove = array_intersect( $available_tags, $tags );
+
 		$params['method']       = 'DELETE';
 		$params['body']['id']   = $contact_id;
-		$params['body']['tags'] = $tags;
+		$params['body']['tags'] = array_keys( $tags_to_remove );
 
 		$response = wp_remote_request( $request, $params );
 
@@ -396,8 +405,8 @@ class WPF_Growmatik {
 
 	public function load_contact( $contact_id ) {
 
-		$params   = $this->get_params();
-		$request  = $this->url . '/contact/id/';
+		$params  = $this->get_params();
+		$request = $this->url . '/contact/id/';
 
 		$params['body']['id'] = $contact_id;
 
