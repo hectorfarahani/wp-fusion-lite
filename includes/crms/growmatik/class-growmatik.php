@@ -139,6 +139,7 @@ class WPF_Growmatik {
 		return true;
 	}
 
+
 	public function get_site_tags() {
 		$params   = $this->get_params();
 		$request  = $this->url . '/site/tags/';
@@ -292,7 +293,11 @@ class WPF_Growmatik {
 			return $response;
 		}
 
-		return true;
+		if ( isset( $response_body->success ) && $response_body->success ) {
+			return true;
+		}
+
+		return false;
 	}
 
 
