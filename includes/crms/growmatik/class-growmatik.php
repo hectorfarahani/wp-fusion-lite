@@ -263,8 +263,10 @@ class WPF_Growmatik {
 		$user_tags = array();
 		$tags      = json_decode( wp_remote_retrieve_body( $response ) );
 
-		foreach ( $tags->data as $tag ) {
-			$user_tags[ strval( $tag->id ) ] = $tag->name;
+		if ( isset( $tags->data ) ) {	
+			foreach ( $tags->data as $tag ) {
+				$user_tags[ strval( $tag->id ) ] = $tag->name;
+			}
 		}
 
 		return $user_tags;
@@ -344,8 +346,40 @@ class WPF_Growmatik {
 	 * @return int Contact ID
 	 */
 
-	public function add_contact( $contact_data, $map_meta_fields = true ) {
+	public function add_contact( $contact_data, $map_meta_fields = false ) {
 
+		$params = $this->get_params( false );
+
+		$request = $this->url . '/contact/';
+
+		$contact_data['email'] = $contact_data['user_email'];
+
+		$params['body']['user'] = $contact_data;
+
+		$response = wp_remote_post( $request, $params );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$results = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( ! $results->success ) {
+			return false;
+		}
+
+		return $results->data->userId;
+	}
+
+
+	/**
+	 * Update contact
+	 *
+	 * @access public
+	 * @return bool
+	 */
+
+	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
 		$params = $this->get_params( false );
 
 		if ( $map_meta_fields == true ) {
@@ -364,28 +398,11 @@ class WPF_Growmatik {
 
 		$results = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( ! $results->success ) {
-			return new WP_Error( $results->message );
-		}
-
-		return $results->data->userId;
-	}
-
-
-	/**
-	 * Update contact
-	 *
-	 * @access public
-	 * @return bool
-	 */
-
-	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
-		$update_results = $this->add_contact( $contact_data, $map_meta_fields );
-		if ( ! is_wp_error( $update_results ) ) {
+		if ( ! is_wp_error( $results ) ) {
 			return true;
 		}
 
-		return $update_results;
+		return $results;
 	}
 
 
