@@ -47,6 +47,30 @@ class WPF_Growmatik {
 	public function init() {}
 
 
+	private function get_email_from_cid( $contact_id ) {
+
+		$users = get_users(
+			array(
+				'meta_key'   => 'growmatik_contact_id',
+				'meta_value' => $contact_id,
+				'fields'     => array( 'user_email' ),
+			)
+		);
+
+		if ( ! empty( $users ) ) {
+
+			return $users[0]->user_email;
+
+		} else {
+
+			$user = $this->get_contact_by_id( $contact_id );
+
+			return $user['email'];
+
+		}
+	}
+
+
 	/**
 	 * Gets params for API calls
 	 *
@@ -263,7 +287,7 @@ class WPF_Growmatik {
 		$user_tags = array();
 		$tags      = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( isset( $tags->data ) ) {	
+		if ( isset( $tags->data ) ) {
 			foreach ( $tags->data as $tag ) {
 				$user_tags[ strval( $tag->id ) ] = $tag->name;
 			}
@@ -382,22 +406,25 @@ class WPF_Growmatik {
 	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
 		$params = $this->get_params( false );
 
-		if ( $map_meta_fields == true ) {
-			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
-		}
+		$mapped_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 
-		$request = $this->url . '/contact/';
+		$request = $this->url . '/contact/attribute/email/';
 
-		$params['body']['user'] = $contact_data;
+		$params['body']['email'] = $this->get_email_from_cid( $contact_id );
+		$params['body']['data']  = $mapped_data;
 
 		$response = wp_remote_post( $request, $params );
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
+		// if ( is_wp_error( $response ) ) {
+		// 	return $response;
+		// }
 
 		$results = json_decode( wp_remote_retrieve_body( $response ) );
-
+		ob_start();
+		var_dump( $contact_data );
+		var_dump( $params );
+		var_dump( $results );
+		error_log( ob_get_clean() );
 		if ( ! is_wp_error( $results ) ) {
 			return true;
 		}
@@ -405,15 +432,7 @@ class WPF_Growmatik {
 		return $results;
 	}
 
-
-	/**
-	 * Loads a contact and updates local user meta
-	 *
-	 * @access public
-	 * @return array User meta data that was returned
-	 */
-
-	public function load_contact( $contact_id ) {
+	public function get_contact_by_id( $contact_id ) {
 
 		$params  = $this->get_params();
 		$request = $this->url . '/contact/id/';
@@ -426,13 +445,33 @@ class WPF_Growmatik {
 			return $response;
 		}
 
+		$user = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		return $user['data'];
+	}
+
+
+	/**
+	 * Loads a contact and updates local user meta
+	 *
+	 * @access public
+	 * @return array User meta data that was returned
+	 */
+
+	public function load_contact( $contact_id ) {
+
+		$user = $this->get_contact_by_id( $contact_id );
+
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
 		$user_meta      = array();
 		$contact_fields = wp_fusion()->settings->get( 'contact_fields' );
-		$body_json      = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		foreach ( $contact_fields as $field_id => $field_data ) {
-			if ( true == $field_data['active'] && isset( $body_json['data'][ $field_data['crm_field'] ] ) ) {
-				$user_meta[ $field_id ] = $body_json['data'][ $field_data['crm_field'] ];
+			if ( true == $field_data['active'] && isset( $user[ $field_data['crm_field'] ] ) ) {
+				$user_meta[ $field_id ] = $user[ $field_data['crm_field'] ];
 			}
 		}
 
