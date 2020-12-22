@@ -46,7 +46,13 @@ class WPF_Growmatik {
 
 	public function init() {}
 
-
+	/**
+	 * Get user email by contact id.
+	 * 
+	 * @param $contact_id Growmatik user id.
+	 * @access private
+	 * @return string User email.
+	 */
 	private function get_email_from_cid( $contact_id ) {
 
 		$users = get_users(
@@ -68,6 +74,56 @@ class WPF_Growmatik {
 			return $user['email'];
 
 		}
+	}
+
+	/**
+	 * Get a user by contact id.
+	 *
+	 * @param $contact_id Growmatik user id.
+	 * @access private
+	 * @return array User data from Growmatik API.
+	 */
+	private function get_contact_by_id( $contact_id ) {
+
+		$params  = $this->get_params();
+		$request = $this->url . '/contact/id/';
+
+		$params['body']['id'] = $contact_id;
+
+		$response = wp_remote_get( $request, $params );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$user = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		return $user['data'];
+	}
+
+	/**
+	 * Get all site tags.
+	 * 
+	 * @access private
+	 * @return array $available_tags List of available tags as id => lable.
+	 */
+	private function get_site_tags() {
+		$params   = $this->get_params();
+		$request  = $this->url . '/site/tags/';
+		$response = wp_remote_get( $request, $params );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$available_tags = array();
+		$tags           = json_decode( wp_remote_retrieve_body( $response ) );
+
+		foreach ( $tags->data as $tag ) {
+			$available_tags[ strval( $tag->id ) ] = $tag->name;
+		}
+
+		return $available_tags;
 	}
 
 
@@ -161,26 +217,6 @@ class WPF_Growmatik {
 		do_action( 'wpf_sync' );
 
 		return true;
-	}
-
-
-	public function get_site_tags() {
-		$params   = $this->get_params();
-		$request  = $this->url . '/site/tags/';
-		$response = wp_remote_get( $request, $params );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$available_tags = array();
-		$tags           = json_decode( wp_remote_retrieve_body( $response ) );
-
-		foreach ( $tags->data as $tag ) {
-			$available_tags[ strval( $tag->id ) ] = $tag->name;
-		}
-
-		return $available_tags;
 	}
 
 
@@ -443,25 +479,6 @@ class WPF_Growmatik {
 
 		return $results;
 	}
-
-	public function get_contact_by_id( $contact_id ) {
-
-		$params  = $this->get_params();
-		$request = $this->url . '/contact/id/';
-
-		$params['body']['id'] = $contact_id;
-
-		$response = wp_remote_get( $request, $params );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$user = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		return $user['data'];
-	}
-
 
 	/**
 	 * Loads a contact and updates local user meta
