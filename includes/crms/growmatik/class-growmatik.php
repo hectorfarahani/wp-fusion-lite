@@ -352,9 +352,9 @@ class WPF_Growmatik {
 			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
 		}
 
-		$request = $this->url . '/contacts/';
+		$request = $this->url . '/contact/';
 
-		$params['body']['users'][0] = $contact_data;
+		$params['body']['user'] = $contact_data;
 
 		$response = wp_remote_post( $request, $params );
 
@@ -368,7 +368,7 @@ class WPF_Growmatik {
 			return new WP_Error( $results->message );
 		}
 
-		return $results->userId;
+		return $results->data->userId;
 	}
 
 
@@ -380,24 +380,12 @@ class WPF_Growmatik {
 	 */
 
 	public function update_contact( $contact_id, $contact_data, $map_meta_fields = true ) {
-
-		$params = $this->get_params( false );
-
-		if ( $map_meta_fields == true ) {
-			$contact_data = wp_fusion()->crm_base->map_meta_fields( $contact_data );
+		$update_results = $this->add_contact( $contact_data, $map_meta_fields );
+		if ( ! is_wp_error( $update_results ) ) {
+			return true;
 		}
 
-		$request = $this->url . '/contacts/';
-
-		$params['body']['users'][0] = $contact_data;
-
-		$response = wp_remote_post( $request, $params );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		return true;
+		return $update_results;
 	}
 
 
