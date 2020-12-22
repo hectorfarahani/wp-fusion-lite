@@ -46,6 +46,7 @@ class WPF_Growmatik {
 
 	public function init() {}
 
+
 	/**
 	 * Get user email by contact id.
 	 *
@@ -76,6 +77,7 @@ class WPF_Growmatik {
 		}
 	}
 
+
 	/**
 	 * Get a user by contact id.
 	 *
@@ -100,6 +102,7 @@ class WPF_Growmatik {
 
 		return $user['data'];
 	}
+
 
 	/**
 	 * Get all site tags.
@@ -126,10 +129,11 @@ class WPF_Growmatik {
 		return $available_tags;
 	}
 
+
 	/**
 	 * Update user custom attributes.
 	 * We use a separate API endpoint and use email to know the user.
-	 * 
+	 *
 	 * @param $contact_id Growmatic user id.
 	 * @param $contact_data Data to push as new user data.
 	 * @access private
@@ -168,10 +172,11 @@ class WPF_Growmatik {
 		return $results;
 	}
 
+
 	/**
 	 * Update user basic attributes.
 	 * Same API call as add contact.
-	 * 
+	 *
 	 * @param $contact_id Growmatic user id.
 	 * @param $contact_data Data to push as new user data.
 	 * @param $map_meta_fields
@@ -179,7 +184,7 @@ class WPF_Growmatik {
 	 * @return bool|WP_Error True on success, WP Error object on failure.
 	 */
 	private function update_contact_basic_attributes( $contact_id, $contact_data, $map_meta_fields ) {
-		
+
 		$contact_data['id'] = $contact_id;
 		$response           = $this->add_contact( $contact_data, $map_meta_fields );
 
