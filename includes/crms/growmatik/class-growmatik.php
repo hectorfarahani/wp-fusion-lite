@@ -25,7 +25,7 @@ class WPF_Growmatik {
 
 		$this->slug     = 'growmatik';
 		$this->name     = 'Growmatik';
-		$this->supports = array( 'add_tags', 'add_fields' );
+		$this->supports = array(); // Tags and Custom attributes should be synced.
 		$this->url      = 'https://api.stg.growmatik.ai/public/v1';
 
 		// Set up admin options
@@ -313,8 +313,13 @@ class WPF_Growmatik {
 			return $response;
 		}
 
-		return true;
+		$response_body = json_decode( wp_remote_retrieve_body( $response ) );
 
+		if ( isset( $response_body->success ) && $response_body->success ) {
+			return true;
+		}
+
+		return false;
 	}
 
 
